@@ -5,14 +5,14 @@ import "gorm.io/gorm"
 type User struct {
     gorm.Model
     Name string
-	Gender gender
+	Gender Gender
 	YearBorn uint
 	Height uint
 }
 
-type gender string
+type Gender string
 
 const (
-	Male gender = "Male"
-	Female  gender = "Female"
+	Male Gender = "Male"
+	Female  Gender = "Female"
 )

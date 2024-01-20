@@ -1,31 +1,36 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
 	"os"
 
-	"github.com/lib/pq"
-	_ "github.com/lib/pq"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"be-nutreazy/models"
+	"be-nutreazy/routes"
+	"be-nutreazy/utils"
 )
 
-func logFatal(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+func initDB() *gorm.DB {
+	// Load environment variables from the .env file
+	err := godotenv.Load()
+	utils.LogFatal(err)
+	
+	db, err := gorm.Open(postgres.Open(os.Getenv("URL")), &gorm.Config{})
+    utils.LogFatal(err)
+	
+	db.AutoMigrate(&models.User{})
+
+	return db
 }
 
 func main() {
-	pgURL, err := pq.ParseURL(os.Getenv("URL"))
-	logFatal(err)
-	
-	handler := func (w http.ResponseWriter, r *http.Request)  {
-		fmt.Fprintf(w, "Hello, this is BE Go lang server!")
-	}
+	db := initDB()
+    
+	router := gin.Default()
 
-	http.HandleFunc("/", handler)
-
-	fmt.Println("Server is running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	routes.SetUpRoutes(router, db)
+	router.Run(":8080")
 }
